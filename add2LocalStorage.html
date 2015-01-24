@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width,  initial-scale=1.0">
+      <title>CoinTracker</title>
+
+      <style>
+      a {
+         color: #0068D2;
+         cursor: pointer;
+      }
+      a:link,
+      a:visited {
+         text-decoration: none;
+         color: #0068D2;
+      }
+      a:hover,
+      a:active {
+         text-decoration: underline;
+         color: #0068D2;
+      }
+      body {
+         font: 12px/18px "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+      }
+      #transactions-table {
+         border-collapse: collapse;
+      }
+      #transactions-table,
+      #transactions-table th,
+      #transactions-table td {
+         padding: 8px 16px;
+         text-align: left;
+         border: 0px solid #B9BABE;
+      }
+      #transactions-table th {
+         font-weight: bold;
+         font-size: 14px;
+         color: #29344B;
+      }
+      #transactions-table td {
+         color: #000;
+      }
+      #transactions-table tr:nth-child(2n) {
+         background: #E8EDFF;
+      }
+      #transactions-form {
+         padding: 10px;
+      }
+      .text input,
+      .button input {
+         padding: 5px;
+         margin: 0;
+         border: 1px solid #ccc;
+         -moz-border-radius: 2px;
+         -webkit-border-radius: 2px;
+         border-radius: 2px;
+      }
+      #transactions-form .item {
+         margin: 3px 0;
+      }
+      #transactions-form label,
+      #transactions-form .field {
+         display: inline-block;
+         color: #0C0B07;
+      }
+      #transactions-form label {
+         width: 110px;
+         font-weight: bold;
+         text-align: right;
+         color: #666;
+      }
+      #transactions-form .text input {
+         width: 176px;
+         padding: 3px;
+      }
+      #transactions-form .button {
+         display: inline-block;
+      }
+      #transactions-form .button-wrapper {
+         padding-left: 113px;
+      }
+      .button input {
+         padding: 4px 8px;
+         color: #343434;
+         background-color: #fdfdfd;
+         background: -moz-linear-gradient(#fdfdfd, #e1e1e1);
+         background: -webkit-gradient(linear, 0 0, 0 100%, from(#fdfdfd), to(#e1e1e1));
+      }
+      .button-default input {
+         font-weight: bold;
+         color: #fff;
+         background-color: #7ca0c7;
+         background: -moz-linear-gradient(#acc6e1, #7ca0c7);
+         background: -webkit-gradient(linear, 0 0, 0 100%, from(#acc6e1), to(#7ca0c7));
+         border-color: #5b80b2;
+      }
+      </style>
+      </style>
+   </head>
+
+   <body>
+      <h1>Transaction Keeper DataBase</h1>
+
+      <form id="transactions-form" role="form">
+         <legend>Transaction Record / Edit</legend>
+
+         <div class="form-group">
+            <label for="tipo">Type</label>
+            <select name="select" id="tipo" required>
+               <option value="" disabled>Choos one</option>
+               <option value="Income">Income</option>
+               <option value="Expense">Expense</option>
+            </select>
+            <br>
+            <label for="category">Category</label>
+            <input type="text" class="form-control" id="category" placeholder="Category" required>
+            <br>
+            <label for="item">Item</label>
+            <input type="text" class="form-control" id="item" placeholder="Provider | Recipient">
+            <br>
+            <label for="amount">Amount</label>
+            <input type="text" class="form-control" id="amount" placeholder="$" required>
+            <br>
+            <label for="trans_date">Date</label>
+            <input type="date" class="form-control" id="trans_date" placeholder="mm/dd/yyyy" required>
+            <br>
+            <label for="note">Comments</label>
+            <input type="text" class="form-control" id="note" placeholder="comments">
+
+         </div>
+         <input type="button" class="btn btn-primary" id="transactions-op-discard" value="Discard">
+         <input type="submit" class="field" id="transactions-op-save" value="Save">
+         <input type="hidden" class="btn btn-primary" id="id_entry" value="0">
+         <!-- <input type="hidden" class="btn btn-primary" id="date" value="nose"> -->
+      </form>
+      <table id="transactions-table">
+         <tr id="transactions-head">
+            <th>ID</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Item</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Comments</th>
+         </tr>
+      </table>
+      <script>
+      //JSON
+      var Transactions = {
+            index: window.localStorage.getItem("Transactions:index"),
+            $table: document.getElementById("transactions-table"),
+            $form: document.getElementById("transactions-form"),
+            $select: document.getElementById("tipo"),
+            $button_save: document.getElementById("transactions-op-save"),
+            $button_discard: document.getElementById("transactions-op-discard"),
+
+            init: function() {
+                  // initialize storage index
+                  if (!Transactions.index) {
+                        window.localStorage.setItem("Transactions:index", Transactions.index = 1);
+                  }
+                  // initialize form
+                  Transactions.$form.reset();
+                  Transactions.$button_discard.addEventListener("click", function(event) {
+                        Transactions.$form.reset();
+                        Transactions.$form.id_entry.value = 0;
+                  }, true);
+                  Transactions.$form.addEventListener("submit", function(event) {
+                        var entry = {
+                              id: parseInt(this.id_entry.value),
+                              tipo: this.tipo.value,
+                              category: this.category.value,
+                              item: this.item.value,
+                              amount: this.amount.value,
+                              date: this.trans_date.value,
+                              comm: this.note.value,
+                              now: new Date(),
+                        };
+                        if (entry.id == 0) { // add
+                              Transactions.storeAdd(entry);
+                              Transactions.tableAdd(entry);
+                              Transactions.selectAdd(entry);
+                        } else { // edit
+                              Transactions.storeEdit(entry);
+                              Transactions.tableEdit(entry);
+                        }
+                        this.reset();
+                        this.id_entry.value = 0;
+                        event.preventDefault();
+                  }, true);
+
+                  // initialize table
+                  if (window.localStorage.length - 1) {
+                        var transaction_list = [],
+                              i, key;
+                        for (i = 0; i < window.localStorage.length; i++) {
+                              key = window.localStorage.key(i);
+                              if (/Transactions:\d+/.test(key)) {
+                                    transaction_list.push(JSON.parse(window.localStorage.getItem(key)));
+                              }
+                        }
+                        if (transaction_list.length) {
+                              transaction_list
+                                    .sort(function(a, b) {
+                                          return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+                                    })
+                                    .forEach(Transactions.tableAdd);
+                        }
+                  }
+                  Transactions.$table.addEventListener("click", function(event) {
+                        var op = event.target.getAttribute("data-op");
+                        if (/edit|remove/.test(op)) {
+                              var entry = JSON.parse(window.localStorage.getItem("Transactions:" + event.target.getAttribute("data-id")));
+                              if (op == "edit") {
+                                    Transactions.$form.tipo.value = entry.tipo;
+                                    Transactions.$form.category.value = entry.category;
+                                    Transactions.$form.item.value = entry.item;
+                                    Transactions.$form.amount.value = entry.amount;
+                                    Transactions.$form.trans_date.value = entry.date;
+                                    Transactions.$form.note.value = entry.comm;
+                                    Transactions.$form.id_entry.value = entry.id;
+                              } else if (op == "remove") {
+                                    if (confirm('Are you sure you want to remove "' + entry.item + ' ' + entry.amount + '" from your transactions?')) {
+                                          Transactions.storeRemove(entry);
+                                          Transactions.tableRemove(entry);
+                                    }
+                              }
+                              event.preventDefault();
+                        }
+                  }, true);
+            },
+            storeAdd: function(entry) {
+                  entry.id = Transactions.index;
+                  window.localStorage.setItem("Transactions:index", ++Transactions.index);
+                  window.localStorage.setItem("Transactions:" + entry.id, JSON.stringify(entry));
+            },
+            storeEdit: function(entry) {
+                  window.localStorage.setItem("Transactions:" + entry.id, JSON.stringify(entry));
+            },
+            storeRemove: function(entry) {
+                  window.localStorage.removeItem("Transactions:" + entry.id);
+            },
+            tableAdd: function(entry) {
+                  var $tr = document.createElement("tr"),
+                        $td, key;
+                  for (key in entry) {
+                        if (entry.hasOwnProperty(key)) {
+                              $td = document.createElement("td");
+                              $td.appendChild(document.createTextNode(entry[key]));
+                              $tr.appendChild($td);
+                        }
+                  }
+                  $td = document.createElement("td");
+                  $td.innerHTML = '<a data-op="edit" data-id="' + entry.id + '">Edit</a> | <a data-op="remove" data-id="' + entry.id + '">Remove</a>';
+                  $tr.appendChild($td);
+                  $tr.setAttribute("id", "entry-" + entry.id);
+                  Transactions.$table.appendChild($tr);
+            },
+            tableEdit: function(entry) {
+                  var $tr = document.getElementById("entry-" + entry.id),
+                        $td, key;
+                  $tr.innerHTML = "";
+                  for (key in entry) {
+                        if (entry.hasOwnProperty(key)) {
+                              $td = document.createElement("td");
+                              $td.appendChild(document.createTextNode(entry[key]));
+                              $tr.appendChild($td);
+                        }
+                  }
+                  $td = document.createElement("td");
+                  $td.innerHTML = '<a data-op="edit" data-id="' + entry.id + '">Edit</a> | <a data-op="remove" data-id="' + entry.id + '">Remove</a>';
+                  $tr.appendChild($td);
+            },
+            tableRemove: function(entry) {
+                  Transactions.$table.removeChild(document.getElementById("entry-" + entry.id));
+            }
+      };
+      Transactions.init();
+      </script>
+
+   </body>
+
+</html>
