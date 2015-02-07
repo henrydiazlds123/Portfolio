@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>IndexedDB: Local Storage using HTML5</title>
+        <script type="text/javascript">
+            //Declara una variable cuyo valor es la de cada indexedDb para los distintos navegadores
+            var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+            
+            //Funcion inicial
+            function startDB() { 
+                //Crea una base de datos y la asigna a la variable myDataBase          
+                myDataBase = indexedDB.open("objecto", 1);
+                //Funcion para crear objetos(tablas) dentro de la base de datos                
+                myDataBase.onupgradeneeded = function (e) {
+                    // Recuperamos la conexion a la base de datos y la abrimos
+                    myDB = myDataBase.result;
+                    //Creamos los objetos de almacenamiento (tabla: people con un ID incremental)                   
+                    objecto = myDB.createObjectStore("persona", { keyPath : 'id', autoIncrement : true });
+                    //Creamos propiedaes a los objetos (persona) indices adicionales
+                    objecto.createIndex('by_name', 'name', { unique : false });
+                    objecto.createIndex('by_dni', 'dni', { unique : true });
+                };
+                // Mensajes de conexion satisfactoria o erronea
+                myDataBase.onsuccess = function (e) {
+                    alert('Database loaded');       
+                };       
+                myDataBase.onerror = function (e)  {
+                    alert('Error loading Database');
+                };
+            }           
+        </script>
+    </head>
+    <body onload="startDB();">
+        <!--
+            @TODO Código visible por el usuario.
+        -->
+    </body>
+</html>
