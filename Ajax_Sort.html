@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="sorttable.js"></script>
+    <style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+    th,
+    td {
+        padding: 5px;
+        text-align: left;
+    }
+    table.sortable.index tbody {
+        counter-reset: sortabletablescope;
+    }
+    table.sortable.index thead tr::before {
+        content: "";
+        display: table-cell;
+    }
+    table.sortable.index tbody tr::before {
+        content: counter(sortabletablescope);
+        counter-increment: sortabletablescope;
+        display: table-cell;
+    }
+}
+    </style>
+</head>
+
+<body>
+<h2>Click on table header to sort the table row</h2>
+    <table class="sortable">
+
+        <caption>Monthly savings</caption>
+        <thead>
+            <tr>
+                <th>Person</th>
+                <th>Monthly pay</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Jan Molby</td>
+                <td>12,000</td>
+            </tr>
+            <tr>
+                <td>Steve Nicol</td>
+                <td>8,500</td>
+            </tr>
+            <tr>
+                <td>Steve McMahon</td>
+                <td>9,200</td>
+            </tr>
+            <tr>
+                <td>John Barnes</td>
+                <td>15,300</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>TOTAL</td>
+                <td>45,000</td>
+            </tr>
+        </tfoot>
+    </table>
+    <br>
+
+    <table class="sortable index">
+        <tr>
+            <th>Number (spelled)</th>
+            <th>Person</th>
+        </tr>
+        <tr>
+            <td sorttable_customkey="2">two</td>
+            <td>Jan</td>
+        </tr>
+        <tr>
+            <td sorttable_customkey="3">three</td>
+            <td>Bruce</td>
+        </tr>
+        <tr>
+            <td sorttable_customkey="1">one</td>
+            <td>Steve</td>
+        </tr>
+    </table>
+    <br>
+
+    <table class="sortable">
+        <th>mes</th>
+        <tr>
+            <td sorttable_customkey="1">January</td>
+        </tr>
+        <tr>
+            <td sorttable_customkey="7">July</td>
+        </tr>
+        <tr>
+            <td sorttable_customkey="3">March</td>
+        </tr>
+        <tr>
+            <td sorttable_customkey="10">October</td>
+        </tr>
+        <tr>
+            <td sorttable_customkey="6">June</td>
+        </tr>
+        <tr>
+            <td sorttable_customkey="12">December</td>
+        </tr>
+
+    </table>
+</body>
+
+</html>
